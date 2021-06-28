@@ -53,44 +53,23 @@ class FsspParser(object):
             форму и проверяет корректность, если нет - обновляет изображение и
             перезапускает цикл.
         """
-        text = self.driver.find_element_by_tag_name("body").text
         find_img = self.driver.find_element_by_class_name("context").find_element_by_css_selector('img')
 
+        CAPTCHA_URL = str(find_img.get_attribute("src"))
+        CAPTCHA_TEXT = captcha_to_text(CAPTCHA_URL)
+        captcha_form = self.driver.find_element_by_name("code")
+        captcha_form.clear()
+        captcha_form.send_keys(CAPTCHA_TEXT)
+        time.sleep(1)
+
+        btn_move = self.driver.find_element_by_xpath("//input[@class='input-submit-capcha']")
+        btn_move.click()
+        time.sleep(2)
+
+        text = self.driver.find_element_by_tag_name("body").text
+
         if 'Неверно введен код' in text:
-            self.driver.delete_all_cookies()
-            find_img.click()
-            time.sleep(1)
-
-            CAPTCHA_URL = str(find_img.get_attribute("src"))
-            CAPTCHA_TEXT = captcha_to_text(CAPTCHA_URL)
-            captcha_form = self.driver.find_element_by_name("code")
-            captcha_form.clear()
-            captcha_form.send_keys(CAPTCHA_TEXT)
-            time.sleep(1)
-
-            btn_move = self.driver.find_element_by_xpath("//input[@class='input-submit-capcha']")
-            btn_move.click()
-            time.sleep(2)
-
-            if btn_move:
-                self.insert_code()
-        else:
-            self.driver.delete_all_cookies()
-            CAPTCHA_URL = str(find_img.get_attribute("src"))
-            CAPTCHA_TEXT = captcha_to_text(CAPTCHA_URL)
-            captcha_form = self.driver.find_element_by_name("code")
-            captcha_form.clear()
-            captcha_form.send_keys(CAPTCHA_TEXT)
-            time.sleep(1)
-
-            btn_move = self.driver.find_element_by_xpath("//input[@class='input-submit-capcha']")
-            btn_move.click()
-            time.sleep(2)
-
-            if btn_move:
-                self.insert_code()
-        
-        #time.sleep(2)
+            self.insert_code()
 
 
     def parse_result(self):
@@ -100,8 +79,8 @@ class FsspParser(object):
 
         if 'По вашему запросу ничего не найдено' not in result:
             find_elements = self.driver.find_elements_by_xpath("//table[@class='list border table alt-p05']/tbody/tr")
-            for i in find_elements:
-                print(i)
+            for i in find_elements[2:]:
+                print(i.text)
         
 
 
