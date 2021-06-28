@@ -3,7 +3,6 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 import time
 import csv
-import requests
 
 from cv_captcha import captcha_to_text
 
@@ -21,7 +20,7 @@ class FsspParser(object):
         self.date = date
 
     def parse_input(self):
-        """ Ввод данных для поиска и переход до страницы с капчой
+        """ Вводит данные для поиска и переходит до страницы с капчой
         """
         # закрываем всплывающее окно
         btn_close = self.driver.find_element_by_class_name("tingle-modal__closeIcon")
@@ -47,33 +46,67 @@ class FsspParser(object):
         # нажимаем кнопку найти
         btn_elem_1 = self.driver.find_element_by_xpath("//button[@class='btn btn-primary']")
         btn_elem_1.click()
-        time.sleep(2)
+        time.sleep(3)
 
-        # Получаем ссылку на изображение капчи
+    def insert_code(self):
+        """ Распознает изображение капчи и преобразует в текст. Вводит в
+            форму и проверяет корректность, если нет - обновляет изображение и
+            перезапускает цикл.
+        """
+        text = self.driver.find_element_by_tag_name("body").text
         find_img = self.driver.find_element_by_class_name("context").find_element_by_css_selector('img')
-    
-        CAPTCHA_URL = str(find_img.get_attribute("src"))
 
-        # с помощью модуля cv_captcha.py преобразуем символы с картинки в текст
-        CAPTCHA_TEXT = captcha_to_text(CAPTCHA_URL)
+        if 'Неверно введен код' in text:
+            self.driver.delete_all_cookies()
+            find_img.click()
+            time.sleep(1)
+
+            CAPTCHA_URL = str(find_img.get_attribute("src"))
+            CAPTCHA_TEXT = captcha_to_text(CAPTCHA_URL)
+            captcha_form = self.driver.find_element_by_name("code")
+            captcha_form.clear()
+            captcha_form.send_keys(CAPTCHA_TEXT)
+            time.sleep(1)
+
+            btn_move = self.driver.find_element_by_xpath("//input[@class='input-submit-capcha']")
+            btn_move.click()
+            time.sleep(2)
+
+            if btn_move:
+                self.insert_code()
+        else:
+            self.driver.delete_all_cookies()
+            CAPTCHA_URL = str(find_img.get_attribute("src"))
+            CAPTCHA_TEXT = captcha_to_text(CAPTCHA_URL)
+            captcha_form = self.driver.find_element_by_name("code")
+            captcha_form.clear()
+            captcha_form.send_keys(CAPTCHA_TEXT)
+            time.sleep(1)
+
+            btn_move = self.driver.find_element_by_xpath("//input[@class='input-submit-capcha']")
+            btn_move.click()
+            time.sleep(2)
+
+            if btn_move:
+                self.insert_code()
         
-        # Вводим полученный текст в поле
-        captcha_form = self.driver.find_element_by_name("code")
-        captcha_form.send_keys(CAPTCHA_TEXT)
-        time.sleep(2)
+        #time.sleep(2)
 
-        # кликаем на кнопку отправить
-        btn_move = self.driver.find_element_by_xpath("//input[@class='input-submit-capcha']")
-        btn_move.click()
 
-        #if self.driver.find_element_by_class_name('b-form__label b-form__label--error'):
-            #find_img_err = self.driver.find_element_by_class_name("context").find_element_by_css_selector('img')
-            #find_img_err.click()
+    def parse_result(self):
+        """ При наличии у запрашиваемого человека задолжностей парсит их
+        """
+        result = self.driver.find_element_by_tag_name("body").text
+
+        if 'По вашему запросу ничего не найдено' not in result:
+            find_elements = self.driver.find_elements_by_xpath("//table[@class='list border table alt-p05']/tbody/tr")
+            for i in find_elements:
+                print(i)
+        
 
 
 
 def main():
-
     driver = webdriver.Chrome()
     driver.get("http://fssprus.ru/")
     time.sleep(1)
@@ -86,6 +119,8 @@ def main():
                 driver, elem[0], elem[1], elem[2], elem[3]
             )
             parser.parse_input()
+            parser.insert_code()
+            parser.parse_result()
 
 
 if __name__ == "__main__":
