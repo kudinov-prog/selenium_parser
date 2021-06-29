@@ -74,20 +74,22 @@ class FsspParser(object):
 
 
 def main():
-    driver = webdriver.Chrome()
-    driver.get("http://fssprus.ru/")
-    time.sleep(1)
-
     with open("input_list.csv", encoding='utf-8-sig') as r_file:
         file_reader = csv.reader(r_file, delimiter=";")
 
         for elem in file_reader:
+            driver = webdriver.Chrome()
+            driver.get("http://fssprus.ru/")
+            time.sleep(1)
+
             parser = FsspParser(
                 driver, elem[0], elem[1], elem[2], elem[3]
             )
+            
             parser.parse_input()
             parser.insert_code()
             parser.parse_result()
+            driver.close()
 
 
 if __name__ == "__main__":
