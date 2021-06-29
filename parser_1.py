@@ -66,13 +66,11 @@ class FsspParser(object):
 
         if 'По вашему запросу ничего не найдено' not in result:
             find_elements = self.driver.find_elements_by_xpath("//table[@class='list border table alt-p05']/tbody/tr")
-            for elem in find_elements[2:]:
-                print(elem.text.replace('\n', ', '))
-                print('__________________________________________________')
+            result_list = [elem.text.split('\n') for elem in find_elements[2:]]
 
-            #with open("result.csv", mode="w", encoding='utf-8') as w_file:
-                #file_writer = csv.writer(w_file, lineterminator="\r")
-                # file_writer.writerow(i.text)
+            with open("result.csv", mode="w", encoding='utf-8') as w_file:
+                file_writer = csv.writer(w_file, lineterminator="\r")
+                file_writer.writerows(result_list)
 
 
 def main():
