@@ -85,7 +85,7 @@ def main():
             parser = FsspParser(
                 driver, elem[0], elem[1], elem[2], elem[3]
             )
-            
+
             parser.parse_input()
             parser.insert_code()
             parser.parse_result()
