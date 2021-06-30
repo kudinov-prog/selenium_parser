@@ -1,6 +1,6 @@
-from selenium import webdriver
 import time
 import csv
+from selenium import webdriver
 
 from cv_captcha import captcha_to_text
 
@@ -68,7 +68,7 @@ class FsspParser(object):
             find_elements = self.driver.find_elements_by_xpath("//table[@class='list border table alt-p05']/tbody/tr")
             result_list = [elem.text.split('\n') for elem in find_elements[2:]]
 
-            with open("result.csv", mode="w", encoding='utf-8') as w_file:
+            with open("result.csv", mode="a", encoding='utf-8') as w_file:
                 file_writer = csv.writer(w_file, lineterminator="\r")
                 file_writer.writerows(result_list)
 

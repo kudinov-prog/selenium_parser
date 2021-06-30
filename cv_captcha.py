@@ -14,9 +14,11 @@ def captcha_to_text(CAPTCHA_URL):
         f.write(pic)
     img = Image.open(fname)
 
+    # Путь до установленного в системе tesseract
     pytesseract.pytesseract.tesseract_cmd = r'C:\Users\kudin\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
 
     # https://tesseract-ocr.github.io/tessdoc/Data-Files#data-files-for-version-400-november-29-2016
+    # Ссылка для скачивания пакета русского языка для распознавания
     text = pytesseract.image_to_string(img, lang='rus').replace(' ', '')
 
     return text[:5]
